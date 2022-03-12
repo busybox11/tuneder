@@ -1,6 +1,9 @@
 require('dotenv').config()
 
 const config = {
+    express: {
+        port:             process.env.WEBSERVER_PORT || 7980
+    },
     spotify: {
         clientID:         process.env.SPOTIFY_CLIENT_ID,
         clientSecret:     process.env.SPOTIFY_CLIENT_SECRET,

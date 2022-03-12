@@ -19,7 +19,7 @@ spotifyApi.refreshAccessToken().then(
 	let topArtists = topArtistsReq.body.items;
 
     for (artist of topArtists) {
-    	for (genre of artist.genres) {
+		for (genre of artist.genres) {
     		if (!Object.keys(tops.genres).includes(genre)) {
     			tops.genres[genre] = 1
     		} else {

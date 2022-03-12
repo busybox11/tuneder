@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Swipe - Tuneder</title>
+
+	<script src="https://cdn.tailwindcss.com"></script>
+	<script>
+	tailwind.config = {
+		theme: {
+	      	fontFamily: {
+	        	'sans': ['Red Hat Text', 'Helvetica', 'Arial', 'sans-serif'],
+	      	},
+	      	extend: {
+				keyframes: {
+					click: {
+						'0%, 100%': { transform: 'scale(1.00)' },
+						'50%': { transform: 'scale(0.95)' },
+					}
+				},
+				animation: {
+					click: 'click 0.2s ease-out',
+				}
+			}
+    	}
+	}
+	</script>
+
+    <style type="text/tailwindcss">
+        @layer base {
+			html {
+				-webkit-tap-highlight-color: transparent;
+			}
+
+            button {
+                @apply active:animate-click
+            }
+
+            .seekbar-transition {
+            	width: 100% !important; 
+            	transition: width 30s linear;
+            }
+		}
+
+        @layer utilities {
+            [x-cloak] { display: none !important; }
+        }
+    </style>
+
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Red+Hat+Text">
+</head>
+<body class="bg-zinc-900 text-white overflow-hidden">
+	<div class="flex flex-col gap-4 items-center justify-center absolute inset-0 px-4 py-6 overflow-hidden">
+		<div id="musicCardsContainer" class="flex flex-col items-center justify-center container max-w-sm h-full relative">
+			<!-- Card container -->
+			<span class="-z-10 text-zinc-600 absolute">No new music.</span>
+		</div>
+
+		<div class="flex flex-row gap-4 items-end justify-center w-full">
+			<button id="nopeBtn" class="h-16 w-16 rounded-full flex bg-red-100 text-red-800">
+				<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x m-auto"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+			</button>
+			<button id="likeBtn" class="h-16 w-16 rounded-full flex bg-green-100 text-green-800">
+				<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart m-auto"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+			</button>
+		</div>
+
+		<div id="clickToAccess" class="h-screen w-screen bg-zinc-900 flex flex-col items-center justify-center gap-4 absolute inset-0 z-50">
+			<div class="h-16 w-16 rounded-full border-2 border-zinc-600 flex">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-volume-x m-auto"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+			</div>
+
+			<span class="text-zinc-600">Click to access the app</span>
+		</div>
+	</div>
+
+	<script src="https://hammerjs.github.io/dist/hammer.min.js"></script>
+	<script>
+		function addNewSongCard(name, artist, artwork, artistIcon, genres, previewLink) {
+			let genresList = ""
+			const genreTemplate = (genreName) => `
+				<span class="text-xs rounded-full px-2 py-1 bg-pink-900 text-pink-200 flex-shrink-0">${genreName}</span>
+			`
+			for (genre of genres) {
+				genresList += genreTemplate(genre)
+			}
+
+			document.getElementById('musicCardsContainer').insertAdjacentHTML('beforeend', `
+			<div class="music--card bg-zinc-800 rounded-3xl overflow-hidden absolute" previewlink="${previewLink}">
+				<div class="flex flex-col pointer-events-none">
+					<img src="${artwork}">
+					<div class="music--seekbar h-1 rounded-br-full bg-white w-0"></div>
+
+					<div class="flex flex-col px-4 pt-3 pb-4">
+						<h3 class="text-2xl font-bold">${name}</h3>
+						
+						<div class="flex flex-row items-center gap-2 mt-1">
+							<img class="h-6 w-6 rounded-full" src="${artistIcon}">
+							<h5 class="text-md font-medium text-zinc-300">${artist}</h5>
+						</div>
+
+						<!-- Tags, add flex-wrap for line break -->
+						<div class="flex flex-row items-center gap-2 mt-2 ${(genres.length == 0) ? 'hidden' : ''}">
+							${genresList}
+						</div>
+					</div>
+				</div>
+			</div>
+			`)
+		}
+
+		addNewSongCard('Therapy', 'Magic City Hippies', 'https://i.scdn.co/image/ab67616d0000b2734f4ab21bec0a36c0d4f5a3d0', 'https://i.scdn.co/image/ab6761610000e5eb6a73d931c5f35f92b6b844a5', ['vapor soul', 'indie poptimism', 'miami indie', 'modern rock', 'indie pop'], 'https://p.scdn.co/mp3-preview/e22255d484854ac611d6b867811d168e2e915c71')
+		addNewSongCard('Slack-Jaw', 'Jarv & Thief', 'https://i.scdn.co/image/ab67616d0000b2739444be0e9ae8fc41bca29aa6', 'https://i.scdn.co/image/ab67616d0000b2739444be0e9ae8fc41bca29aa6', ['lo-fi rap'], 'https://p.scdn.co/mp3-preview/d4db27e3a1d08860a89aa0e28e7979b43f0fe465')
+		addNewSongCard('Swamp', 'Mid-Air Thief', 'https://i.scdn.co/image/ab67616d0000b273a6abcfd1487c52c4ec3d6320', 'https://i.scdn.co/image/ab67616d0000b273b0183eaa2146c4b17725d9aa', ['folktronica', 'korean indie rock'], 'https://p.scdn.co/mp3-preview/091a1d74b98337ed8b546dea720cdd51f0d53595')
+		addNewSongCard('Doing the Things', 'Louis Cole', 'https://i.scdn.co/image/ab67616d0000b27374efdebd8ed8549d6a480128', 'https://i.scdn.co/image/ab6761610000e5eb79cb92608893a3a21d32a439', ['la pop'], 'https://p.scdn.co/mp3-preview/e88e79ba4bc3b8ac00c40f2995e92f04ff87c35b')
+		addNewSongCard('Get Gone', 'Tennyson', 'https://i.scdn.co/image/ab67616d0000b27363b0b35f599f4b1a3cdd82e2', 'https://i.scdn.co/image/ab6761610000e5ebf04c696ce95df0bac6e117ff', ['edmonton indie', 'future bass', 'vapor soul', 'vapor twitch'], 'https://p.scdn.co/mp3-preview/1f435745ccdda699095a9e7a1dd0b8f888eebcea')
+		
+		var contexteAudio = new (window.AudioContext || window.webkitAudioContext)()
+
+		var musicContainer = document.querySelector('#musicCardsContainer');
+		var allCards = document.querySelectorAll('.music--card');
+		var nope = document.getElementById('nopeBtn');
+		var love = document.getElementById('likeBtn');
+		var source
+
+		function initCards(card, index) {
+		  var newCards = document.querySelectorAll('.music--card:not(.removed)');
+
+		  if (newCards.length == 0) {
+		  	try {
+			  	source.stop()
+			  } catch(e) { console.error(e) }
+		  }
+
+		  // var lastCard = newCards[0]
+		  newCards.forEach(function (card, index) {
+		  	if (index == 0) {
+		  		const previewSong = card.attributes.previewlink.value
+		  		let yodelBuffer
+		  		const context = new AudioContext()
+		  		  window.fetch(previewSong)
+				    .then(response => response.arrayBuffer())
+				    .then(arrayBuffer => context.decodeAudioData(arrayBuffer))
+				    .then(audioBuffer => {
+				     	yodelBuffer = audioBuffer;
+
+						  try {
+						  	source.stop()
+						  } catch(e) { console.error(e) }
+				     	play(yodelBuffer)
+				    });
+
+				    function play(audioBuffer) {
+				    	card.querySelector('.music--seekbar').classList.add('seekbar-transition')
+
+					    source = context.createBufferSource();
+					    source.buffer = audioBuffer;
+					    source.connect(context.destination);
+					    source.start();
+					}
+		  	}
+
+		  	// TODO: Height difference between two cards
+		  	/*
+		  	const offsetHeight = card.offsetTop - lastCard.offsetTop
+		  	console.log(offsetHeight)
+			*/
+
+		    card.style.zIndex = allCards.length - index;
+		    card.classList.add('transition', 'duration-300')
+		    card.style.transform = 'scale(' + (20 - index) / 20 + ') translateY(-' + 30 * index + 'px)';
+		    card.style.opacity = (10 - index) / 10;
+
+		    // lastCard = card
+		  });
+		  
+		  musicContainer.classList.add('loaded');
+		}
+
+		document.getElementById('clickToAccess').addEventListener(
+			'click',
+			() => {
+				initCards();
+
+				allCards.forEach(function (el) {
+				  var hammertime = new Hammer(el);
+
+				  hammertime.on('pan', function (event) {
+				    el.classList.remove('transition', 'duration-300');
+				    el.classList.add('moving');
+				  });
+
+				  hammertime.on('pan', function (event) {
+				    if (event.deltaX === 0) return;
+				    if (event.center.x === 0 && event.center.y === 0) return;
+
+				    musicContainer.classList.toggle('music_love', event.deltaX > 0);
+				    musicContainer.classList.toggle('music_nope', event.deltaX < 0);
+
+				    var xMulti = event.deltaX * 0.03;
+				    var yMulti = event.deltaY / 80;
+				    var rotate = xMulti * yMulti;
+
+				    event.target.style.transform = 'translate(' + event.deltaX + 'px, ' + event.deltaY + 'px) rotate(' + rotate + 'deg)';
+				  });
+
+				  hammertime.on('panend', function (event) {
+				    el.classList.add('transition', 'duration-300');
+				    el.classList.remove('moving');
+				    musicContainer.classList.remove('music_love');
+				    musicContainer.classList.remove('music_nope');
+
+				    var moveOutWidth = document.body.clientWidth;
+				    var keep = Math.abs(event.deltaX) < 80 || Math.abs(event.velocityX) < 0.5;
+
+				    event.target.classList.toggle('removed', !keep);
+
+				    if (keep) {
+				      event.target.style.transform = '';
+				    } else {
+				      var endX = Math.max(Math.abs(event.velocityX) * moveOutWidth, moveOutWidth);
+				      var toX = event.deltaX > 0 ? endX : -endX;
+				      var endY = Math.abs(event.velocityY) * moveOutWidth;
+				      var toY = event.deltaY > 0 ? endY : -endY;
+				      var xMulti = event.deltaX * 0.03;
+				      var yMulti = event.deltaY / 80;
+				      var rotate = xMulti * yMulti;
+
+				      event.target.style.transform = 'translate(' + toX + 'px, ' + (toY + event.deltaY) + 'px) rotate(' + rotate + 'deg)';
+				      initCards();
+				    }
+				  });
+				});
+				document.getElementById('clickToAccess').classList.add('hidden')
+			}
+		)
+
+		function createButtonListener(love) {
+		  return function (event) {
+		    var cards = document.querySelectorAll('.music--card:not(.removed)');
+		    var moveOutWidth = document.body.clientWidth * 1.25;
+
+		    if (!cards.length) return false;
+
+		    var card = cards[0];
+
+		    card.classList.add('transition', 'duration-300');
+		    card.classList.add('removed');
+
+		    if (love) {
+		      card.style.transform = 'translate(' + moveOutWidth + 'px, 100px) rotate(30deg)';
+		    } else {
+		      card.style.transform = 'translate(-' + moveOutWidth + 'px, 100px) rotate(-30deg)';
+		    }
+
+			card.addEventListener('animationend', () => {
+			  console.log('Animation ended');
+			});
+
+		    initCards();
+
+		    event.preventDefault();
+		  };
+		}
+
+		var nopeListener = createButtonListener(false);
+		var loveListener = createButtonListener(true);
+
+		nope.addEventListener('click', nopeListener);
+		love.addEventListener('click', loveListener);
+
+	</script>
+</body>
+</html>
