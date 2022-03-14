@@ -89,7 +89,7 @@
 			}
 
 			document.getElementById('musicCardsContainer').insertAdjacentHTML('beforeend', `
-			<div class="music--card bg-zinc-800 rounded-3xl overflow-hidden absolute" previewlink="${previewLink}">
+			<div class="music--card bg-zinc-800 rounded-3xl overflow-hidden absolute pointer-events-none" previewlink="${previewLink}">
 				<div class="flex flex-col pointer-events-none">
 					<img src="${artwork}">
 					<div class="music--seekbar h-1 rounded-br-full bg-white w-0"></div>
@@ -112,11 +112,13 @@
 			`)
 		}
 
-		addNewSongCard('Therapy', 'Magic City Hippies', 'https://i.scdn.co/image/ab67616d0000b2734f4ab21bec0a36c0d4f5a3d0', 'https://i.scdn.co/image/ab6761610000e5eb6a73d931c5f35f92b6b844a5', ['vapor soul', 'indie poptimism', 'miami indie', 'modern rock', 'indie pop'], 'https://p.scdn.co/mp3-preview/e22255d484854ac611d6b867811d168e2e915c71')
-		addNewSongCard('Slack-Jaw', 'Jarv & Thief', 'https://i.scdn.co/image/ab67616d0000b2739444be0e9ae8fc41bca29aa6', 'https://i.scdn.co/image/ab67616d0000b2739444be0e9ae8fc41bca29aa6', ['lo-fi rap'], 'https://p.scdn.co/mp3-preview/d4db27e3a1d08860a89aa0e28e7979b43f0fe465')
-		addNewSongCard('Swamp', 'Mid-Air Thief', 'https://i.scdn.co/image/ab67616d0000b273a6abcfd1487c52c4ec3d6320', 'https://i.scdn.co/image/ab67616d0000b273b0183eaa2146c4b17725d9aa', ['folktronica', 'korean indie rock'], 'https://p.scdn.co/mp3-preview/091a1d74b98337ed8b546dea720cdd51f0d53595')
-		addNewSongCard('Doing the Things', 'Louis Cole', 'https://i.scdn.co/image/ab67616d0000b27374efdebd8ed8549d6a480128', 'https://i.scdn.co/image/ab6761610000e5eb79cb92608893a3a21d32a439', ['la pop'], 'https://p.scdn.co/mp3-preview/e88e79ba4bc3b8ac00c40f2995e92f04ff87c35b')
-		addNewSongCard('Get Gone', 'Tennyson', 'https://i.scdn.co/image/ab67616d0000b27363b0b35f599f4b1a3cdd82e2', 'https://i.scdn.co/image/ab6761610000e5ebf04c696ce95df0bac6e117ff', ['edmonton indie', 'future bass', 'vapor soul', 'vapor twitch'], 'https://p.scdn.co/mp3-preview/1f435745ccdda699095a9e7a1dd0b8f888eebcea')
+		for (let i = 0; i < 3; i++) {
+			addNewSongCard('Therapy', 'Magic City Hippies', 'https://i.scdn.co/image/ab67616d0000b2734f4ab21bec0a36c0d4f5a3d0', 'https://i.scdn.co/image/ab6761610000e5eb6a73d931c5f35f92b6b844a5', ['vapor soul', 'indie poptimism', 'miami indie', 'modern rock', 'indie pop'], 'https://p.scdn.co/mp3-preview/e22255d484854ac611d6b867811d168e2e915c71')
+			addNewSongCard('Slack-Jaw', 'Jarv & Thief', 'https://i.scdn.co/image/ab67616d0000b2739444be0e9ae8fc41bca29aa6', 'https://i.scdn.co/image/ab67616d0000b2739444be0e9ae8fc41bca29aa6', ['lo-fi rap'], 'https://p.scdn.co/mp3-preview/d4db27e3a1d08860a89aa0e28e7979b43f0fe465')
+			addNewSongCard('Swamp', 'Mid-Air Thief', 'https://i.scdn.co/image/ab67616d0000b273a6abcfd1487c52c4ec3d6320', 'https://i.scdn.co/image/ab67616d0000b273b0183eaa2146c4b17725d9aa', ['folktronica', 'korean indie rock'], 'https://p.scdn.co/mp3-preview/091a1d74b98337ed8b546dea720cdd51f0d53595')
+			addNewSongCard('Doing the Things', 'Louis Cole', 'https://i.scdn.co/image/ab67616d0000b27374efdebd8ed8549d6a480128', 'https://i.scdn.co/image/ab6761610000e5eb79cb92608893a3a21d32a439', ['la pop'], 'https://p.scdn.co/mp3-preview/e88e79ba4bc3b8ac00c40f2995e92f04ff87c35b')
+			addNewSongCard('Get Gone', 'Tennyson', 'https://i.scdn.co/image/ab67616d0000b27363b0b35f599f4b1a3cdd82e2', 'https://i.scdn.co/image/ab6761610000e5ebf04c696ce95df0bac6e117ff', ['edmonton indie', 'future bass', 'vapor soul', 'vapor twitch'], 'https://p.scdn.co/mp3-preview/1f435745ccdda699095a9e7a1dd0b8f888eebcea')
+		}
 		
 		var contexteAudio = new (window.AudioContext || window.webkitAudioContext)()
 
@@ -138,6 +140,8 @@
 		  // var lastCard = newCards[0]
 		  newCards.forEach(function (card, index) {
 		  	if (index == 0) {
+		    	card.classList.remove('pointer-events-none')
+
 		  		const previewSong = card.attributes.previewlink.value
 		  		let yodelBuffer
 		  		const context = new AudioContext()
@@ -189,7 +193,7 @@
 				  var hammertime = new Hammer(el);
 
 				  hammertime.on('pan', function (event) {
-				    el.classList.remove('transition', 'duration-300');
+				    el.classList.remove('transition', 'duration-300', 'z-50');
 				    el.classList.add('moving');
 				  });
 
@@ -208,7 +212,7 @@
 				  });
 
 				  hammertime.on('panend', function (event) {
-				    el.classList.add('transition', 'duration-300');
+				    el.classList.add('transition', 'duration-300', 'z-50');
 				    el.classList.remove('moving');
 				    musicContainer.classList.remove('music_love');
 				    musicContainer.classList.remove('music_nope');
@@ -247,7 +251,7 @@
 
 		    var card = cards[0];
 
-		    card.classList.add('transition', 'duration-300');
+		    card.classList.add('transition', 'duration-300', 'z-50');
 		    card.classList.add('removed');
 
 		    if (love) {
