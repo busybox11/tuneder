@@ -94,10 +94,10 @@
 					<img src="${artwork}">
 					<div class="music--seekbar h-1 rounded-br-full bg-white w-0"></div>
 
-					<div class="flex flex-col px-4 pt-3 pb-4">
+					<div class="flex flex-col px-4 pt-2 pb-4">
 						<h3 class="text-2xl font-bold truncate overflow-hidden">${name}</h3>
 						
-						<div class="flex flex-row items-center gap-2 mt-1">
+						<div class="flex flex-row items-center gap-2">
 							<img class="h-6 w-6 rounded-full" src="${artistIcon}">
 							<h5 class="text-md font-medium text-zinc-300 truncate">${artist}</h5>
 						</div>
@@ -112,15 +112,27 @@
 			`)
 		}
 
+		var contexteAudio = new (window.AudioContext || window.webkitAudioContext)()
+
+		var musicContainer = document.querySelector('#musicCardsContainer');
+		var allCards = document.querySelectorAll('.music--card');
+		var nope = document.getElementById('nopeBtn');
+		var love = document.getElementById('likeBtn');
+		var source
+
 		fetch('/api/spotify/getPlaylist/5bWlgmXdNbwtDnxZGDz8H8')
         .then(function(res) { return res.json() })
         .then(function(data) {
         	for (track of data.tracks.items) {				
 				// TODO: Implement
+				/*
 				fetch(`/api/spotify/getArtist/${track.track.artists[0].id}`)
 			        .then(function(res) { return res.json() })
 			        .then(function(artistData) {
 			    })
+			    */
+
+			    // Handle no preview_url in track data
 
 				addNewSongCard(
 					track.track.name,
@@ -132,161 +144,157 @@
 				)
 			}
 
-			var contexteAudio = new (window.AudioContext || window.webkitAudioContext)()
+			function initCards(card, index) {
+				return new Promise(async (resolve, reject) => {
+					var newCards = document.querySelectorAll('.music--card:not(.removed)');
 
-		var musicContainer = document.querySelector('#musicCardsContainer');
-		var allCards = document.querySelectorAll('.music--card');
-		var nope = document.getElementById('nopeBtn');
-		var love = document.getElementById('likeBtn');
-		var source
-
-		function initCards(card, index) {
-		  var newCards = document.querySelectorAll('.music--card:not(.removed)');
-
-		  if (newCards.length == 0) {
-		  	try {
-			  	source.stop()
-			  } catch(e) { console.error(e) }
-		  }
-
-		  // var lastCard = newCards[0]
-		  newCards.forEach(function (card, index) {
-		  	if (index == 0) {
-		    	card.classList.remove('pointer-events-none')
-
-		  		const previewSong = card.attributes.previewlink.value
-		  		let yodelBuffer
-		  		const context = new AudioContext()
-		  		  window.fetch(previewSong)
-				    .then(response => response.arrayBuffer())
-				    .then(arrayBuffer => context.decodeAudioData(arrayBuffer))
-				    .then(audioBuffer => {
-				     	yodelBuffer = audioBuffer;
-
-						  try {
-						  	source.stop()
-						  } catch(e) { console.error(e) }
-				     	play(yodelBuffer)
-				    });
-
-				    function play(audioBuffer) {
-				    	card.querySelector('.music--seekbar').classList.add('seekbar-transition')
-
-					    source = context.createBufferSource();
-					    source.buffer = audioBuffer;
-					    source.connect(context.destination);
-					    source.start();
+					if (newCards.length == 0) {
+						try {
+					  	contexteAudio.close()
+					  } catch(e) { console.error(e) }
 					}
-		  	}
 
-		  	// TODO: Height difference between two cards
-		  	/*
-		  	const offsetHeight = card.offsetTop - lastCard.offsetTop
-		  	console.log(offsetHeight)
-			*/
+					// var lastCard = newCards[0]
+					newCards.forEach(function (card, index) {
+						if (index == 0) {
+						card.classList.remove('pointer-events-none')
 
-		    card.style.zIndex = allCards.length - index;
-		    card.classList.add('transition', 'duration-300')
-		    card.style.transform = 'scale(' + (20 - index) / 20 + ') translateY(-' + 30 * index + 'px)';
-		    card.style.opacity = (10 - index) / 10;
+							const previewSong = card.attributes.previewlink.value
+							let yodelBuffer
+							const context = new AudioContext()
+							  window.fetch(previewSong)
+						    .then(response => response.arrayBuffer())
+						    .then(arrayBuffer => context.decodeAudioData(arrayBuffer))
+						    .then(audioBuffer => {
+						     	yodelBuffer = audioBuffer;
 
-		    // lastCard = card
-		  });
-		  
-		  musicContainer.classList.add('loaded');
-		}
+								  try {
+								  	source.stop()
+								  } catch(e) { console.error(e) }
+						     	play(yodelBuffer)
+						    });
 
-		document.getElementById('clickToAccess').addEventListener(
-			'click',
-			() => {
-				initCards();
+						    function play(audioBuffer) {
+							    source = context.createBufferSource();
+							    source.buffer = audioBuffer;
+							    source.connect(context.destination);
 
-				allCards.forEach(function (el) {
-				  var hammertime = new Hammer(el);
+							    source.start();
 
-				  hammertime.on('pan', function (event) {
-				    el.classList.remove('transition', 'duration-300', 'z-50');
-				    el.classList.add('moving');
-				  });
+								card.querySelector('.music--seekbar').classList.add('seekbar-transition')
+							}
+						}
 
-				  hammertime.on('pan', function (event) {
-				    if (event.deltaX === 0) return;
-				    if (event.center.x === 0 && event.center.y === 0) return;
+						// TODO: Height difference between two cards
+						/*
+						const offsetHeight = card.offsetTop - lastCard.offsetTop
+						console.log(offsetHeight)
+					*/
 
-				    musicContainer.classList.toggle('music_love', event.deltaX > 0);
-				    musicContainer.classList.toggle('music_nope', event.deltaX < 0);
+					card.style.zIndex = allCards.length - index;
+					card.classList.add('transition', 'duration-300')
+					card.style.transform = 'scale(' + (20 - index) / 20 + ') translateY(-' + 30 * index + 'px)';
+					card.style.opacity = (10 - index) / 10;
 
-				    var xMulti = event.deltaX * 0.03;
-				    var yMulti = event.deltaY / 80;
-				    var rotate = xMulti * yMulti;
+					// lastCard = card
+					});
 
-				    event.target.style.transform = 'translate(' + event.deltaX + 'px, ' + event.deltaY + 'px) rotate(' + rotate + 'deg)';
-				  });
-
-				  hammertime.on('panend', function (event) {
-				    el.classList.add('transition', 'duration-300', 'z-50');
-				    el.classList.remove('moving');
-				    musicContainer.classList.remove('music_love');
-				    musicContainer.classList.remove('music_nope');
-
-				    var moveOutWidth = document.body.clientWidth;
-				    var keep = Math.abs(event.deltaX) < 80 || Math.abs(event.velocityX) < 0.5;
-
-				    event.target.classList.toggle('removed', !keep);
-
-				    if (keep) {
-				      event.target.style.transform = '';
-				    } else {
-				      var endX = Math.max(Math.abs(event.velocityX) * moveOutWidth, moveOutWidth);
-				      var toX = event.deltaX > 0 ? endX : -endX;
-				      var endY = Math.abs(event.velocityY) * moveOutWidth;
-				      var toY = event.deltaY > 0 ? endY : -endY;
-				      var xMulti = event.deltaX * 0.03;
-				      var yMulti = event.deltaY / 80;
-				      var rotate = xMulti * yMulti;
-
-				      event.target.style.transform = 'translate(' + toX + 'px, ' + (toY + event.deltaY) + 'px) rotate(' + rotate + 'deg)';
-				      initCards();
-				    }
-				  });
-				});
-				document.getElementById('clickToAccess').classList.add('hidden')
+					musicContainer.classList.add('loaded');
+					resolve(true)
+				})
 			}
-		)
 
-		function createButtonListener(love) {
-		  return function (event) {
-		    var cards = document.querySelectorAll('.music--card:not(.removed)');
-		    var moveOutWidth = document.body.clientWidth * 1.25;
+			document.getElementById('clickToAccess').addEventListener(
+				'click',
+				() => {
+					initCards().then((success) => {
+						allCards.forEach(function (el) {
+						  var hammertime = new Hammer(el);
 
-		    if (!cards.length) return false;
+						  hammertime.on('pan', function (event) {
+						    el.classList.remove('transition', 'duration-300', 'z-50');
+						    el.classList.add('moving');
+						  });
 
-		    var card = cards[0];
+						  hammertime.on('pan', function (event) {
+						    if (event.deltaX === 0) return;
+						    if (event.center.x === 0 && event.center.y === 0) return;
 
-		    card.classList.add('transition', 'duration-300', 'z-50');
-		    card.classList.add('removed');
+						    musicContainer.classList.toggle('music_love', event.deltaX > 0);
+						    musicContainer.classList.toggle('music_nope', event.deltaX < 0);
 
-		    if (love) {
-		      card.style.transform = 'translate(' + moveOutWidth + 'px, 100px) rotate(30deg)';
-		    } else {
-		      card.style.transform = 'translate(-' + moveOutWidth + 'px, 100px) rotate(-30deg)';
-		    }
+						    var xMulti = event.deltaX * 0.03;
+						    var yMulti = event.deltaY / 80;
+						    var rotate = xMulti * yMulti;
 
-			card.addEventListener('animationend', () => {
-			  console.log('Animation ended');
-			});
+						    event.target.style.transform = 'translate(' + event.deltaX + 'px, ' + event.deltaY + 'px) rotate(' + rotate + 'deg)';
+						  });
 
-		    initCards();
+						  hammertime.on('panend', function (event) {
+						    el.classList.add('transition', 'duration-300', 'z-50');
+						    el.classList.remove('moving');
+						    musicContainer.classList.remove('music_love');
+						    musicContainer.classList.remove('music_nope');
 
-		    event.preventDefault();
-		  };
-		}
+						    var moveOutWidth = document.body.clientWidth;
+						    var keep = Math.abs(event.deltaX) < 80 || Math.abs(event.velocityX) < 0.5;
 
-		var nopeListener = createButtonListener(false);
-		var loveListener = createButtonListener(true);
+						    event.target.classList.toggle('removed', !keep);
 
-		nope.addEventListener('click', nopeListener);
-		love.addEventListener('click', loveListener);
+						    if (keep) {
+						      event.target.style.transform = '';
+						    } else {
+						      var endX = Math.max(Math.abs(event.velocityX) * moveOutWidth, moveOutWidth);
+						      var toX = event.deltaX > 0 ? endX : -endX;
+						      var endY = Math.abs(event.velocityY) * moveOutWidth;
+						      var toY = event.deltaY > 0 ? endY : -endY;
+						      var xMulti = event.deltaX * 0.03;
+						      var yMulti = event.deltaY / 80;
+						      var rotate = xMulti * yMulti;
+
+						      event.target.style.transform = 'translate(' + toX + 'px, ' + (toY + event.deltaY) + 'px) rotate(' + rotate + 'deg)';
+						      initCards();
+						    }
+						  });
+						});
+						document.getElementById('clickToAccess').classList.add('hidden')
+					})
+				}
+			)
+
+			function createButtonListener(love) {
+			  return function (event) {
+			    var cards = document.querySelectorAll('.music--card:not(.removed)');
+			    var moveOutWidth = document.body.clientWidth * 1.25;
+
+			    if (!cards.length) return false;
+
+			    var card = cards[0];
+
+			    card.classList.add('transition', 'duration-300', 'z-50');
+			    card.classList.add('removed');
+
+			    if (love) {
+			      card.style.transform = 'translate(' + moveOutWidth + 'px, 100px) rotate(30deg)';
+			    } else {
+			      card.style.transform = 'translate(-' + moveOutWidth + 'px, 100px) rotate(-30deg)';
+			    }
+
+				card.addEventListener('animationend', () => {
+				  console.log('Animation ended');
+				});
+
+			    initCards();
+
+			    event.preventDefault();
+			  };
+			}
+
+			var nopeListener = createButtonListener(false);
+			var loveListener = createButtonListener(true);
+
+			nope.addEventListener('click', nopeListener);
+			love.addEventListener('click', loveListener);
 
         })
 		
